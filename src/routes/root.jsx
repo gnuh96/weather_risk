@@ -13,6 +13,7 @@ import {Modal, ModalClose, Sheet} from '@mui/joy'
 import * as d3 from 'd3'
 import DataGridCustom from '../components/dataGrid/DataGridCustom'
 import StormDistributionChart from '../components/stormDistributionChart/StormDistributionChart'
+import packageJson from '../../package.json'
 
 const drawerWidth = 350
 function Root(props) {
@@ -253,6 +254,16 @@ function Root(props) {
                 <span>Stats</span>
               </button>
             </div>
+          </Box>
+          <Box
+            sx={{
+              position: 'fixed',
+              bottom: 10,
+              display: 'flex',
+              justifyContent: 'center',
+              width: drawerWidth,
+            }}>
+            <Typography>{`V ${packageJson?.version || '0.0.0'}`}</Typography>
           </Box>
         </Drawer>
       </div>
