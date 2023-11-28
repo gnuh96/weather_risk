@@ -1,33 +1,60 @@
 import 'mapbox-gl/dist/mapbox-gl.css'
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css'
+import './css/root.css'
 import useMapboxHandler from '../hooks/useMapboxHandler'
 import {useEffect, useState} from 'react'
 import DenseAppBar from '../components/appBar/CustomAppBar'
-import {Box, Drawer} from '@mui/material'
+import {Box, Drawer, Typography} from '@mui/material'
 import dayjs from 'dayjs'
-
-import './css/root.css'
-import initData from '../constants/miami_zip_code.json'
 import DatePickerCustom from '../components/datePicker/DatePickerCustom'
 import PredictionService from '../services/predict.services'
+import AlertAccordionList from '../components/accordionList/AlertAccordionList'
+import {Modal, ModalClose, Sheet} from '@mui/joy'
+import * as d3 from 'd3'
+import DataGridCustom from '../components/dataGrid/DataGridCustom'
 
 const drawerWidth = 350
-
 function Root(props) {
   const {mapRef, initMapWeatherRisk, onLoadMapWeather, alert} =
     useMapboxHandler()
-  const [data, setData] = useState(initData)
   const [startDate, setStartDate] = useState(dayjs().format('YYYY-MM-DD'))
   const [alertMap, setAlertMap] = useState()
+  const [openModalHistory, setOpenModalHistory] = useState(false)
+  const [openModalStat, setOpenModalStat] = useState(false)
+  const [stormData, setStormData] = useState()
 
   useEffect(() => {
-    initMapWeatherRisk(mapRef)
-    onLoadMapWeather(mapRef)
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.remove()
+    const fetchData = async () => {
+      try {
+        const response = await d3.csv('../../storm-data.csv')
+
+        if (!response) {
+          throw new Error('Data not found or inaccessible')
+        }
+
+        response.forEach(el => {
+          el.id = el['EVENT_ID']
+        })
+        setStormData(response)
+      } catch (error) {
+        console.error('Error fetching data:', error)
       }
     }
+
+    fetchData()
+  }, [])
+
+  useEffect(() => {
+    if (!mapRef.current) {
+      initMapWeatherRisk(mapRef)
+      onLoadMapWeather(mapRef)
+    }
+
+    // return () => {
+    //   if (mapRef.current) {
+    //     mapRef.current.remove()
+    //   }
+    // }
   }, [mapRef, initMapWeatherRisk, onLoadMapWeather])
 
   useEffect(() => {
@@ -49,7 +76,7 @@ function Root(props) {
       }
     }
     fetchAlertMapDay()
-  }, [alert])
+  }, [alert, startDate])
 
   // useEffect(() => {
   //   const fetchAlertMapDay = async () => {
@@ -74,18 +101,30 @@ function Root(props) {
   //   fetchAlertMapDay()
   // }, [startDate])
 
-  useEffect(() => {
-    if (data && mapRef.current) {
-      const alertSource = mapRef.current.getSource('alerts')
-      if (alertSource) {
-        alertSource.setData(data)
-      }
-    }
-  }, [data])
+  // useEffect(() => {
+  //   if (data && mapRef.current) {
+  //     const alertSource = mapRef.current.getSource('alerts')
+  //     if (alertSource) {
+  //       alertSource.setData(data)
+  //     }
+  //   }
+  // }, [data])
 
   const handleChangeDateRange = date => {
     setStartDate(dayjs(date).format('YYYY-MM-DD'))
   }
+
+  const handleOpenHistory = () => setOpenModalHistory(true)
+
+  const handleOpenStat = () => setOpenModalStat(true)
+
+  const cols = [
+    {field: 'BEGIN_DATE', headerName: 'Date', flex: 1},
+    {field: 'CZ_NAME_STR', headerName: 'Ville', flex: 1},
+    {field: 'RAIN_SUM', headerName: 'Rain Sum (mm)', flex: 1},
+    {field: 'TEMP_MIN', headerName: 'Temperature (°C)', flex: 1},
+    {field: 'WINDSPEED', headerName: 'Vitesse de vent (km/h)', flex: 1},
+  ]
 
   return (
     <div className='wrapperMap'>
@@ -95,6 +134,68 @@ function Root(props) {
           position='fixed'
           sx={{zIndex: theme => theme.zIndex.drawer + 1}}
         />
+
+        <Modal
+          aria-labelledby='modal-title'
+          aria-describedby='modal-desc'
+          open={openModalHistory}
+          onClose={() => setOpenModalHistory(false)}
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <Sheet
+            variant='outlined'
+            sx={{
+              // maxWidth: 500,
+              borderRadius: 'md',
+              p: 3,
+              boxShadow: 'lg',
+            }}>
+            <ModalClose variant='plain' sx={{m: 1}} />
+            <Typography variant='h4'>Historique</Typography>
+            <div
+              style={{
+                width: '900px',
+                display: 'flex',
+                justifyContent: 'center',
+              }}>
+              <DataGridCustom
+                rows={stormData}
+                cols={cols}
+                maxHeight='80%'
+                rowHeight={40}
+              />
+            </div>
+          </Sheet>
+        </Modal>
+        <Modal
+          aria-labelledby='modal-title'
+          aria-describedby='modal-desc'
+          open={openModalStat}
+          onClose={() => setOpenModalStat(false)}
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <Sheet
+            variant='outlined'
+            sx={{
+              maxWidth: 500,
+              borderRadius: 'md',
+              p: 3,
+              boxShadow: 'lg',
+            }}>
+            <ModalClose variant='plain' sx={{m: 1}} />
+            <Typography variant='h4'>Stat</Typography>
+            <Typography id='modal-desc' textColor='text.tertiary'>
+              Make sure to use <code>aria-labelledby</code> on the modal dialog
+              with an optional <code>aria-describedby</code> attribute.
+            </Typography>
+          </Sheet>
+        </Modal>
         <Drawer
           variant='permanent'
           sx={{
@@ -105,7 +206,13 @@ function Root(props) {
               boxSizing: 'border-box',
             },
           }}>
-          <Box sx={{paddingLeft: '12px', paddingRight: '12px', paddingTop: 8}}>
+          <Box
+            sx={{
+              paddingLeft: '12px',
+              paddingRight: '12px',
+              paddingTop: 10,
+              paddingBottom: 3,
+            }}>
             <DatePickerCustom
               startDate={dayjs(startDate).toDate()}
               onChange={handleChangeDateRange}
@@ -127,15 +234,22 @@ function Root(props) {
               }}
             />
           </Box>
-          {alertMap && (
-            <ul>
-              {Object.keys(alertMap).map((key, i) => (
-                <li key={`alert_${i}`}>
-                  <strong>{key}:</strong> {alertMap[key]}
-                </li>
-              ))}
-            </ul>
+          {alertMap && alert && (
+            <AlertAccordionList alert={alert} alertMap={alertMap} />
           )}
+
+          <Box sx={{display: 'flex'}}>
+            <div className='submitButton'>
+              <button onClick={handleOpenHistory}>
+                <span>Historique</span>
+              </button>
+            </div>
+            <div className='submitButton'>
+              <button onClick={handleOpenStat}>
+                <span>Stats</span>
+              </button>
+            </div>
+          </Box>
         </Drawer>
       </div>
 

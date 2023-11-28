@@ -16,3 +16,27 @@
 .mapboxgl-ctrl-geocoder {
   width: 100% !important;
 }
+
+.submitButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 3rem;
+  width: 200px;
+  padding: 20px;
+}
+
+.submitButton button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 2.5rem;
+  background-color: transparent;
+  border-radius: 10px;
+  border: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  color: #fff;
+  background-color: #124376;
+}

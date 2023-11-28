@@ -1,0 +1,17 @@
+.dataGridContainer {
+  width: 100%;
+  height: 100%;
+  margin: 0.5rem 0 0 0;
+  overflow: scroll;
+  justify-content: center;
+}
+
+.MuiDataGrid-root .MuiDataGrid-cell:focus-within {
+  outline: none !important;
+}
+
+.MuiDataGrid-cell {
+  font-family: 'Roboto', Inter, Avenir, Helvetica, Arial, sans-serif;
+  color: #7a8295;
+  font-size: 14;
+}
