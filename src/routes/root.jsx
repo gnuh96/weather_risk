@@ -12,6 +12,7 @@ import AlertAccordionList from '../components/accordionList/AlertAccordionList'
 import {Modal, ModalClose, Sheet} from '@mui/joy'
 import * as d3 from 'd3'
 import DataGridCustom from '../components/dataGrid/DataGridCustom'
+import StormDistributionChart from '../components/stormDistributionChart/StormDistributionChart'
 
 const drawerWidth = 350
 function Root(props) {
@@ -183,17 +184,20 @@ function Root(props) {
           <Sheet
             variant='outlined'
             sx={{
-              maxWidth: 500,
+              // maxWidth: 500,
               borderRadius: 'md',
               p: 3,
               boxShadow: 'lg',
             }}>
             <ModalClose variant='plain' sx={{m: 1}} />
             <Typography variant='h4'>Stat</Typography>
-            <Typography id='modal-desc' textColor='text.tertiary'>
-              Make sure to use <code>aria-labelledby</code> on the modal dialog
-              with an optional <code>aria-describedby</code> attribute.
-            </Typography>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+              }}>
+              <StormDistributionChart data={stormData} />
+            </div>
           </Sheet>
         </Modal>
         <Drawer
