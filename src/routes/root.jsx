@@ -3,17 +3,17 @@ import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css'
 import './css/root.css'
 import useMapboxHandler from '../hooks/useMapboxHandler'
 import {useEffect, useState} from 'react'
-import DenseAppBar from '../components/appBar/CustomAppBar'
+import CustomAppBar from '../components/appBar/CustomAppBar'
 import {Box, Drawer, Typography} from '@mui/material'
 import dayjs from 'dayjs'
 import DatePickerCustom from '../components/datePicker/DatePickerCustom'
 import PredictionService from '../services/predict.services'
 import AlertAccordionList from '../components/accordionList/AlertAccordionList'
 import {Modal, ModalClose, Sheet} from '@mui/joy'
-import * as d3 from 'd3'
 import DataGridCustom from '../components/dataGrid/DataGridCustom'
 import StormDistributionChart from '../components/stormDistributionChart/StormDistributionChart'
 import packageJson from '../../package.json'
+import TornadoService from '../services/tornado.services'
 
 const drawerWidth = 350
 function Root(props) {
@@ -28,16 +28,12 @@ function Root(props) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await d3.csv('../../storm-data.csv')
+        const response = await TornadoService.getHistoricalTornado()
 
         if (!response) {
           throw new Error('Data not found or inaccessible')
         }
-
-        response.forEach(el => {
-          el.id = el['EVENT_ID']
-        })
-        setStormData(response)
+        setStormData(response.tornado_data)
       } catch (error) {
         console.error('Error fetching data:', error)
       }
@@ -121,17 +117,28 @@ function Root(props) {
   const handleOpenStat = () => setOpenModalStat(true)
 
   const cols = [
-    {field: 'BEGIN_DATE', headerName: 'Date', flex: 1},
-    {field: 'CZ_NAME_STR', headerName: 'Ville', flex: 1},
+    {
+      field: 'date',
+      headerName: 'Date',
+      flex: 1,
+      renderCell: params => formatDateString(params.value),
+    },
+    {field: 'ville', headerName: 'Ville', flex: 1},
     {field: 'RAIN_SUM', headerName: 'Rain Sum (mm)', flex: 1},
     {field: 'TEMP_MIN', headerName: 'Temperature (°C)', flex: 1},
     {field: 'WINDSPEED', headerName: 'Vitesse de vent (km/h)', flex: 1},
   ]
 
+  const formatDateString = dateString => {
+    // Assuming dateString is in the format DD-MM-YYYY
+    const formattedDate = dayjs(dateString, 'DD-MM-YYYY').format('DD/MM/YYYY')
+    return formattedDate
+  }
+
   return (
     <div className='wrapperMap'>
       <div style={{display: 'flex', height: '100%'}}>
-        <DenseAppBar
+        <CustomAppBar
           title='Weather Risk'
           position='fixed'
           sx={{zIndex: theme => theme.zIndex.drawer + 1}}

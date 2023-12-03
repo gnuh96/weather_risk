@@ -1,5 +1,6 @@
 import React, {useEffect, useRef} from 'react'
 import * as d3 from 'd3'
+import dayjs from 'dayjs'
 
 const width = 800
 const height = 400
@@ -21,13 +22,13 @@ const StormDistributionChart = ({data}) => {
 
     const xScale = d3
       .scaleBand()
-      .domain(data.map(d => d.BEGIN_DATE))
+      .domain(data.map(d => dayjs(d.date, 'DD-MM-YYYY').format('DD/MM/YYYY')))
       .range([0, innerWidth])
       .padding(0.1)
 
     const yScale = d3
       .scaleLinear()
-      .domain([0, d3.max(data, d => +d.TOR_LENGTH)])
+      .domain([0, d3.max(data, d => d.RAIN_SUM)])
       .range([innerHeight, 0])
 
     const g = svg
@@ -50,10 +51,10 @@ const StormDistributionChart = ({data}) => {
       .data(data)
       .enter()
       .append('rect')
-      .attr('x', d => xScale(d.BEGIN_DATE))
-      .attr('y', d => yScale(+d.TOR_LENGTH))
+      .attr('x', d => xScale(dayjs(d.date, 'DD-MM-YYYY').format('DD/MM/YYYY')))
+      .attr('y', d => yScale(+d.RAIN_SUM))
       .attr('width', xScale.bandwidth())
-      .attr('height', d => innerHeight - yScale(+d.TOR_LENGTH))
+      .attr('height', d => innerHeight - yScale(d.RAIN_SUM))
       .attr('fill', 'steelblue')
 
     g.append('text')
@@ -62,7 +63,7 @@ const StormDistributionChart = ({data}) => {
       .attr('x', 0 - innerHeight / 2)
       .attr('dy', '1em')
       .style('text-anchor', 'middle')
-      .text('Nombre de tornade')
+      .text('Quantité de pluie (mm)')
 
     g.append('text')
       .attr(
