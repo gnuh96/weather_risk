@@ -22,11 +22,11 @@ function AlertAccordionList({alert, alertMap}) {
   const chartRef = useRef(null)
 
   const chartData = {
-    labels: ['Probability', 'Other'],
+    labels: ['Other', 'Probability'],
     datasets: [
       {
-        data: [alertMap.proba, 100 - alertMap.proba],
-        backgroundColor: ['#F7464A', '#36A2EB'],
+        data: [100 - alertMap.proba, alertMap.proba],
+        backgroundColor: ['#36A2EB', '#F7464A'],
       },
     ],
   }
