@@ -130,7 +130,6 @@ function Root(props) {
   ]
 
   const formatDateString = dateString => {
-    // Assuming dateString is in the format DD-MM-YYYY
     const formattedDate = dayjs(dateString, 'DD-MM-YYYY').format('DD/MM/YYYY')
     return formattedDate
   }

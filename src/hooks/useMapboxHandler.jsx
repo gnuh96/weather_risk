@@ -65,48 +65,11 @@ export default function useMapboxHandler() {
     })
   }
 
-  const setMouseHoverEventOnRiskElement = mapRef => {
-    if (mapRef.current) {
-      let hoveredStateId = null
-      mapRef.current.on('mousemove', e => {
-        if (mapRef.current) {
-          mapRef.current.getCanvas().style.cursor = 'pointer'
-          if (e.features && e.features.length > 0) {
-            if (hoveredStateId !== null && hoveredStateId !== undefined) {
-              mapRef.current.setFeatureState(
-                {source: 'test', id: hoveredStateId},
-                {hover: false},
-              )
-            }
-            hoveredStateId = e.features[0].id
-            mapRef.current.setFeatureState(
-              {source: 'test', id: hoveredStateId},
-              {hover: true},
-            )
-          }
-        }
-      })
-      mapRef.current.on('mouseleave', () => {
-        if (mapRef.current) {
-          mapRef.current.getCanvas().style.cursor = ''
-          if (hoveredStateId !== null) {
-            mapRef.current.setFeatureState(
-              {source: 'alerts', id: hoveredStateId},
-              {hover: false},
-            )
-          }
-        }
-      })
-    }
-  }
-
   const onLoadMapWeather = mapRef => {
     mapRef.current.on('load', () => {
-      let popup = null
       if (mapRef.current) {
         addAlertSourceAndLayer(mapRef)
-        onClickWeatherRiskElement(mapRef, popup)
-        setMouseHoverEventOnRiskElement(mapRef)
+        onClickWeatherRiskElement(mapRef)
         const geocoderContainer = document.getElementById('geocoder')
 
         if (geocoderContainer) {
